@@ -185,7 +185,7 @@ Content-Type: application/json
 
 We will send the full details of the student to be created in a single request, encoded in the body as a JSON string. For FastAPI to read the body, we must first create a class that describes the expected fields and types in the body. We inherit from pydantic's `BaseModel` class:
 
-```
+```python3
 from pydantic import BaseModel
 
 class Student(BaseModel):
@@ -282,7 +282,7 @@ Interfacing with redis is a implementation detail and left for you to figure out
 - Implement at least two of the following challenges:
     - File upload in a POST request, using multipart/form-data
     - Have a route in your application that returns a content type that is not _plaintext_
-    - Some form of authentication through inspecting the request headers
+    - Some form of authorization through inspecting the request headers
     - A special route that can perform a batch delete or update of resources matching a certain condition
 
-> You must provide ample documentation on how to build & run your code and how to make the HTTP requests to your API, as well as what are the expected responses for each request. You will not be deducted if your program is slow or unoptimised.
+> You must provide ample documentation on how to build & run your code and how to make the HTTP requests to your API, as well as what are the expected responses for each request. You will not be deducted if your program is slow or unoptimised, but bonus points may be given if you show meaningful thought in analysing how performance was / can be improved in your application.
