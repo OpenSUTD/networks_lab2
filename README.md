@@ -8,7 +8,7 @@ If you done backend programming before and want to challenge yourself, you may s
 
 In the guided lab, we will create a REST-over-HTTP API that imitates a student registry service: it can create, list (read), update and delete students. In REST terminology, _students_ are our resource that we manipulate over HTTP.
 
-Make sure you have docker and docker-compose installed. Pycharm is the suggested editor, but you can use any editor you're comfortable with.
+Make sure you have [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/) installed. Pycharm is the suggested editor, but you can use any editor you're comfortable with.
 
 Run `docker-compose up` and make sure you get "Hello world" by going to [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
@@ -68,14 +68,17 @@ def get_all_students():
             {
                 "name": "Alice",
                 "id": "1004803",
+                "gpa": 4.0
             },
             {
                 "name": "Bob",
-                "id": "1004529"
+                "id": "1004529",
+                "gpa": 3.6
             },
             {
                 "name": "Charlie",
-                "id": "1004910"
+                "id": "1004910",
+                "gpa": 5.0
             }
         ]
     }
@@ -113,6 +116,8 @@ students = [
     },
     {
         "name": "Charlie",
+        "id": "1004910",
+        "gpa": 5.0
     }
 ]
 ```
@@ -121,7 +126,7 @@ students = [
 @app.get("/students/{student_id}")
 def find_student(student_id: str):
     global students
-    for student in student_id:
+    for student in students:
         if student["id"] == student_id:
             return student
     return None
@@ -134,10 +139,11 @@ To use response codes in FastAPI, you need to first declare the `response` param
 ```python3
 from fastapi import FastAPI, Response
 
+
 @app.get("/students/{student_id}")
 def find_student(student_id: str, response: Response):
     global students
-    for student in student_id:
+    for student in students:
         if student["id"] == student_id:
             return student
     response.status_code = 404
@@ -158,6 +164,7 @@ By REST convention, the above request means to retrieve the first 5 students sor
 
 ```python3
 from typing import Optional
+
 
 @app.get('/students')
 def get_students(sortBy: Optional[str] = None, limit: Optional[int] = None):
@@ -188,6 +195,7 @@ We will send the full details of the student to be created in a single request, 
 ```python3
 from pydantic import BaseModel
 
+
 class Student(BaseModel):
     name: str
     id: str
@@ -198,7 +206,7 @@ Then, to simply have FastAPI convert the request body into the instance of the c
 ```python3
 @app.post("/students")
 def create_student(student: Student):
-    ... # do something with the student param
+    ...  # do something with the student param
 ```
 
 Note that you will need an external tool such as Postman to fire the request, web browsers fetch pages with GET only (without writing your own Javascript). You can also use command line tools like wget. Alternatively, you can write `.http` files that are recognised by both Jetbrains and Visual Studio Code as HTTP requests and you can "run" the files to fire a HTTP request.
@@ -234,6 +242,7 @@ First you need to write the function to produce a new instance of the database c
 
 ```python3
 import redis
+
 
 def get_redis_client():
     return redis.Redis(host="redis")
