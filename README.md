@@ -8,7 +8,7 @@ If you have done backend programming before and want to challenge yourself, you 
 
 In the guided lab, we will create a REST-over-HTTP API that imitates a student registry service: it can create, list (read), update and delete students. In REST terminology, _students_ are our resource that we manipulate over HTTP.
 
-Make sure you have [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/) installed. Pycharm is the suggested editor, but you can use any editor you're comfortable with.
+Make sure you have [docker](https://docs.docker.com/get-docker/) and docker compose (V2) installed. In modern docker versions the `docker compose` tool should be installed together with docker desktop for Windows/Mac.
 
 Run `docker compose up` and make sure you get "Hello world" by going to [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
