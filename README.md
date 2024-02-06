@@ -2,7 +2,7 @@
 
 In this lab, you will get to put into practice the semantics of REST (Representational State Transfer) by implementing a REST over HTTP API.
 
-If you done backend programming before and want to challenge yourself, you may skip to the Checkoff Requirements. We will be using the FastAPI framework, which is very well documented, very easy to learn and has many tutorials online. You are free to search tutorials online instead of following this guide.
+If you have done backend programming before and want to challenge yourself, you may skip to the Checkoff Requirements. We will be using the FastAPI framework, which is very well documented, very easy to learn and has many tutorials online. You are free to search tutorials online instead of following this guide.
 
 ## Setup
 
@@ -10,7 +10,7 @@ In the guided lab, we will create a REST-over-HTTP API that imitates a student r
 
 Make sure you have [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/) installed. Pycharm is the suggested editor, but you can use any editor you're comfortable with.
 
-Run `docker-compose up` and make sure you get "Hello world" by going to [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Run `docker compose up` and make sure you get "Hello world" by going to [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ## Walkthrough
 
@@ -56,7 +56,7 @@ def get_all_students():
 
 In a similar vein, you can return text that can be parsed as HTML, or even binary files for multimedia like images and videos.
 
-[JSON (Javascript Object Notation)](https://en.wikipedia.org/wiki/JSON) is essentially the most common format that most REST APIs accept and return data. When you return a dictionary in the route function, FastAPI will try its best to convert it to a JSON string.
+[JSON (Javascript Object Notation)](https://en.wikipedia.org/wiki/JSON) is essentially the most common format that most REST APIs accept and return data. When you return a Python dictionary in the route function, FastAPI will try its best to convert it to a JSON string.
 
 Let's try to return data that is JSON-compliant:
 
@@ -157,7 +157,7 @@ def find_student(student_id: str, response: Response):
 In REST convention, the body of GET requests is usually empty. To customise GET queries for your REST API such as sorting and filtering, we usually encode query parameters in the URL, like so:
 
 ```
-GET http://127.0.0.1:8000/students&sortBy=id&limit5 HTTP/1.1
+GET http://127.0.0.1:8000/students?sortBy=id&limit5 HTTP/1.1
 ```
 
 By REST convention, the above request means to retrieve the first 5 students sorted by id. In FastAPI, any extra parameters inside your route function that do not appear as route parameters will automatically be assumed to be query parameters with a matching name.
@@ -209,76 +209,23 @@ def create_student(student: Student):
     ...  # do something with the student param
 ```
 
-Note that you will need an external tool such as Postman to fire the request, web browsers fetch pages with GET only (without writing your own Javascript). You can also use command line tools like wget. Alternatively, you can write `.http` files that are recognised by both Jetbrains and Visual Studio Code as HTTP requests and you can "run" the files to fire a HTTP request.
+Note that you will need an external tool such as Postman to fire the request, web browsers fetch pages with GET only (without writing your own Javascript). You can also use command line tools like curl. Alternatively, you can write `.http` files that are recognised by both Jetbrains and Visual Studio Code as HTTP requests and you can "run" the files to fire a HTTP request.
 
-### Part 5 - Persistence and Dependency Injection
+## Some hints
 
-[Official FastAPI docs on dependency injection](https://fastapi.tiangolo.com/tutorial/dependencies/?h=depen#what-is-dependency-injection)
-
-In the earlier part, you might have added the student to the global student variable like this:
-
-```python3
-@app.post("/students")
-def create_student(student: Student):
-    global students
-    students.append(student)
-```
-
-This introduces some problems. Web servers are multi-threaded: a web server will run a few threads in parallel so that it can answer multiple requests at once. As you have learnt in CSE and ESC, mutating global variables in multithreaded environments can cause visibility issues. What means in this context is that when one client has POST-ed a new student, when another client fires `GET /students`, he may be retrieving the old list of students. In addition, when the Python program shuts down, all data is lost.
-
-To solve this issue pretty much every web service out there decouples their HTTP application layer and the database persistence layer. The data resources are not stored in Python variables, but live in database software that are built to store data in a structured or unstructured manner. There are lots of database software available, and for this lab we will use Redis, a very straightforward key-value store.
-
-This part of the lab, and the rest of the lab, is intentionally left open ended. You are free to use any other database of your choice, modifying the `docker-compose.yaml` file to add new containers and `requirements.txt` file to add new Python libraries to interface with the database of your choice.
-
-Even if you use redis, there are many ways you can store the data: do you want to chuck everything in a single key? Do you want to save each student into their own keys by student id, then have a separate key called `student_ids`? This is left as an implementation detail and a thinking exercise for you, you will not be penalised if you choose one way or another, as long as the HTTP clients can see their changes properly.
-
-In any case, you will need to know how to use [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) to give your routing functions access to your database client.
-
-> DI/IoC, as well as multithreading and visibility issues, are very important Software Engineering concepts you must be aware of and comfortable with as a Term 6 ISTD student!
-
-#### Creating the redis (or whatever database client)
-
-First you need to write the function to produce a new instance of the database client. For the case of redis, using the [`redis-py` package](https://github.com/andymccurdy/redis-py):
-
-```python3
-import redis
-
-
-def get_redis_client():
-    return redis.Redis(host="redis")
-```
-
-Note that the host of the redis container is just `redis`, we have defined it inside `docker-compose.yaml`.
-
-#### Declare the dependency in the dependent
-
-In dependency injection, the "dependant" declares that they need a certain "dependency". In our case, the "dependant" is our routing function, and the "dependency" is the redis/database client.
-
-In FastAPI, declaring dependencies is really simple:
-
-```python3
-from fastapi import FastAPI, Depends
-
-
-@app.post("/students")
-def create_student(student: Student, redis_client: redis.Redis = Depends(get_redis_client)):
-    # do something with your redis_client, like saving data to a key
-    ...
-```
-
-Interfacing with redis is a implementation detail and left for you to figure out on your own. Remember to update the `GET` methods to read from redis as well!
+1. To prevent your API to start off "empty", you can load data into your variables from a text file (or just hardcode it in your Python file) in app.py
+2. To write tests, you can either write bash scripts that call `curl`, use a GUI like Postman and save it to a collection file, or use a HTTP client in Python such as `requests` or `httpx` (recommended)
 
 ## Checkoff Requirements
 
 - A REST-over-HTTP API written in any programming language, in any framework, to imitate any real life service (e.g. fake myportal, fake edimension), backed with any other supporting services (redis, mysql, etc):
     - Can be deployed on any docker host using `docker compose` - you fail if I need to install any other dependencies on my computer!
-- With accompanying `.http` unit test files, showcasing your API's ability to respond to:
+- With accompanying test files (curl, python etc), showcasing your API's ability to respond to:
     - a GET request ...
         - with no query parameters
         - with a `sortBy` query parameter, to transform the order of the items returned
             - up to you to decide what attributes can be sorted
         - with a `count` query parameter, to limit the number of items returned
-        - with a `offset` query parameter, to "skip" ahead by a number of items
         - with any combination of the above query parameters
     - a POST request ...
         - that creates a new resource with the given attributes in the body
@@ -290,8 +237,8 @@ Interfacing with redis is a implementation detail and left for you to figure out
 - Identify which routes in your application are _idempotent_, and provide proof to support your answer.
 - Implement at least two of the following challenges:
     - File upload in a POST request, using multipart/form-data
-    - Have a route in your application that returns a content type that is not _plaintext_
-    - Some form of authorization through inspecting the request headers
+    - Have a route in your application that returns a binary content type (photo, video, audio)
+    - Some form of authorization through inspecting the request headers (e.g. admin-only password-protected route)
     - A special route that can perform a batch delete or update of resources matching a certain condition
 
 > You must provide ample documentation on how to build & run your code and how to make the HTTP requests to your API, as well as what are the expected responses for each request. You will not be deducted if your program is slow or unoptimised, but bonus points may be given if you show meaningful thought in analysing how performance was / can be improved in your application.
